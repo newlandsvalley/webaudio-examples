@@ -1,4 +1,4 @@
-module Audio.Example.Rhythm where
+module Audio.Example.Rhythm (example) where
 
 import Prelude (Unit, bind, pure, unit, ($), (+), (-), (*), (/), (>))
 import Data.Array ((!!))

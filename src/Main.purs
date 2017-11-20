@@ -6,6 +6,7 @@ import Control.Monad.Aff (Fiber, launchAff)
 import Audio.WebAudio.Types (WebAudio)
 import Network.HTTP.Affjax (AJAX)
 import Audio.Example.Rhythm as Rhythm
+import Audio.Example.Volume as Volume
 
 main :: ∀ eff.
   Eff
@@ -21,4 +22,5 @@ main :: ∀ eff.
        Unit
     )
 main =
-  launchAff Rhythm.example
+  -- launchAff Rhythm.example
+  launchAff Volume.example
