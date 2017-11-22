@@ -9,6 +9,7 @@ import Audio.Example.Rhythm as Rhythm
 import Audio.Example.Volume as Volume
 import Audio.Example.Crossfade as Crossfade
 import Audio.Example.Filter as Filter
+import Audio.Example.Oscillator as Oscillator
 
 main :: ∀ eff.
   Eff
@@ -27,4 +28,5 @@ main =
   -- launchAff Rhythm.example
   -- launchAff Volume.example
   -- launchAff Crossfade.example
-  launchAff Filter.example
+  -- launchAff Filter.example
+  launchAff Oscillator.example

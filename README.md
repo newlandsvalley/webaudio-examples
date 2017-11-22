@@ -11,6 +11,7 @@ Completed so far
 * Rhythm
 * Volume
 * Filter
+* Oscillator
 * Crossfade
 
 Building
