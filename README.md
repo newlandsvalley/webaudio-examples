@@ -10,6 +10,7 @@ Completed so far
 
 * Rhythm
 * Volume
+* Filter
 * Crossfade
 
 Building
@@ -19,5 +20,5 @@ from the current directory:
 
     $ bower install
     $ ./build.sh
-    
+
 Then host dist/webaudio-examples.html on your web server of choice.
