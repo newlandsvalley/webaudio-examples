@@ -1,9 +1,10 @@
 module Audio.Example.Feedback (example) where
 
-import Prelude (Unit, bind, pure, ($), (+))
-import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode, WebAudio)
+import Prelude (Unit, bind, pure, ($))
+import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode,
+     DelayNode, DestinationNode, WebAudio)
 import Audio.WebAudio.AudioContext (makeAudioContext, createBufferSource, createDelay,
-      createGain, connect, currentTime, destination)
+      createGain, connect, currentTime, destination, disconnect)
 import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource, stopBufferSource, setLoop)
 import Audio.WebAudio.AudioParam (setValue)
 import Audio.WebAudio.GainNode (gain)
@@ -19,9 +20,11 @@ import Control.Monad.Eff.Class (liftEff)
 -- | feedback example illustrating DelayNode inspired by
 -- | http://blog.chrislowis.co.uk/2014/07/23/dub-delay-web-audio-api.html
 
-type VolumeController =
+type FeedbackController =
   { source :: AudioBufferSourceNode
+  , delay :: DelayNode
   , gain :: GainNode
+  , destination :: DestinationNode
   }
 
 -- | load the buffer and complete the configuration
@@ -32,7 +35,7 @@ setup :: ∀ eff.
       , wau :: WebAudio
       | eff
       )
-      VolumeController
+      FeedbackController
 setup ctx = do
   buffer <- loadSoundBuffer ctx "ogg/chop.ogg"
   liftEff $ configure ctx buffer
@@ -45,7 +48,7 @@ configure :: ∀ eff.
       ( wau :: WebAudio
       | eff
       )
-      VolumeController
+      FeedbackController
 configure ctx buf = do
   src <- createBufferSource ctx
   _ <- setBuffer buf src
@@ -67,14 +70,12 @@ configure ctx buf = do
   -- connect both the original source and the delayed feedback to the destination
   _ <- connect src dst
   _ <- connect delay dst
-  startTime <- currentTime ctx
-  _ <- startBufferSource (startTime + 0.1) src
-  pure { source : src, gain : feedback}
+  pure { source : src, delay : delay, gain : feedback, destination : dst}
 
 -- | start the sound
 start :: ∀ eff.
      AudioContext
-  -> VolumeController
+  -> FeedbackController
   -> Eff
       ( wau :: WebAudio
       | eff
@@ -87,7 +88,7 @@ start ctx controller = do
 -- | stop the sound
 stop :: ∀ eff.
      AudioContext
-  -> VolumeController
+  -> FeedbackController
   -> Eff
       ( wau :: WebAudio
       | eff
@@ -95,6 +96,11 @@ stop :: ∀ eff.
         Unit
 stop ctx controller = do
   now <- currentTime ctx
+  -- these disconnects seem to be necessary to enable stopping
+  -- presumably if we just kill the source, the feedback loop will still be active
+  _ <- disconnect controller.delay controller.gain
+  _ <- disconnect controller.gain controller.delay
+  _ <- disconnect controller.delay controller.destination
   stopBufferSource now controller.source
 
 -- | the complete example
@@ -109,8 +115,7 @@ example = do
   ctx <- liftEff makeAudioContext
   controller <- setup ctx
   _ <- liftEff $ start ctx controller
-  -- let it run for 5 seconds
-  _ <- delay (Milliseconds 5000.0)
-  -- why doesn't this stop ?? - presumably because the feedback carries on
-  -- autonomously from the source once started.  I need disconnect!
+  -- let it run for 10 seconds
+  _ <- delay (Milliseconds 10000.0)
+  -- why doesn't this stop ??
   liftEff $ stop ctx controller
