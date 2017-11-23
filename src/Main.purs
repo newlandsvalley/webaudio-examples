@@ -11,6 +11,8 @@ import Audio.Example.Crossfade as Crossfade
 import Audio.Example.Filter as Filter
 import Audio.Example.Oscillator as Oscillator
 import Audio.Example.Feedback as Feedback
+import Audio.Example.FrequencyModulation as FrequencyModulation
+
 
 main :: ∀ eff.
   Eff
@@ -32,3 +34,7 @@ main =
   -- launchAff Filter.example
   -- launchAff Oscillator.example
   launchAff Feedback.example
+
+{- failed tests
+  launchAff FrequencyModulation.example
+-}
