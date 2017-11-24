@@ -33,9 +33,5 @@ main =
   -- launchAff Crossfade.example
   -- launchAff Filter.example
   -- launchAff Oscillator.example
-  launchAff Feedback.example
-
-
-{- failed tests
+  -- launchAff Feedback.example
   launchAff FrequencyModulation.example
--}

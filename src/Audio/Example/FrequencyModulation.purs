@@ -3,52 +3,20 @@ module Audio.Example.FrequencyModulation (example) where
 import Prelude (Unit, bind, pure, ($))
 import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, WebAudio)
 import Audio.WebAudio.AudioContext (makeAudioContext, createOscillator,
-      createGain, connect, connectParam, currentTime, destination, disconnect, disconnectParam)
+      createGain, connect, currentTime, destination)
 import Audio.WebAudio.Oscillator (frequency, setFrequency, startOscillator, stopOscillator)
 import Audio.WebAudio.GainNode (setGain)
+import Audio.WebAudio.Utils (unsafeConnectParam)
 import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
 import Network.HTTP.Affjax (AJAX)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 
--- | this doesn't work and I don't know why ! It ignores the modulation.
--- | Also, it puts into very clear perspective the impedence mismatch
--- | between pure functions, no variable assignment on the one hand
--- | and updating state in situ on the other
--- | So, an AudioParam can be updated by means of an unsafe assignment
--- | (which is bad enough) but then you need this facility in order to
--- | vary the modulator frequency (an AudioParam) and feed it to the carrier
-
-{-
-var mod, modGain, osc;
-
-var out = context.destination;
-
-var startTest = function(){
-    mod = context.createOscillator();
-    mod.frequency.value = 8;
-
-    modGain = context.createGain();
-    modGain.gain.value = 30;
-
-    osc = context.createOscillator();
-    osc.frequency.value = 300;
-
-    mod.connect(modGain);
-    modGain.connect(osc.frequency);
-    osc.connect(out);
-
-    osc.start(0);
-    mod.start(0);
-};
-
-var stopTest = function(){
-    osc.stop(0);
-    mod.stop(0);
-    mod = modGain = osc = null;
-};
--}
+-- | Frequency modulation example
+-- | examples exist on https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
+-- | this is simply an illutration of connecting a node to an Audio Param
+-- | (not another node)
 
 type FMController =
   { modulator :: OscillatorNode
@@ -56,7 +24,7 @@ type FMController =
   , modGain :: GainNode
   }
 
--- | configurew the nodes
+-- | configure the nodes
 configure :: ∀ eff.
      AudioContext
   -> Eff
@@ -68,7 +36,6 @@ configure ctx = do
   -- the modulating oscillator
   modulator <- createOscillator ctx
   _ <- setFrequency 0.8 modulator
-  -- modulationFrequency <- getValue mfreqParam
   -- the carrier oscillator (the basic note)
   carrier <- createOscillator ctx
   -- the gain node
@@ -79,7 +46,7 @@ configure ctx = do
   dst <- destination ctx
   -- connect it all up
   _ <- connect modulator modGainNode
-  _ <- connectParam modGainNode cfreqParam
+  _ <- unsafeConnectParam modGainNode carrier "frequency"
   _ <- connect carrier dst
   pure { modulator : modulator, carrier : carrier, modGain : modGainNode}
 
