@@ -1,12 +1,11 @@
 module Audio.Example.FrequencyModulation (example) where
 
 import Prelude (Unit, bind, pure, ($))
-import Audio.WebAudio.Types (AudioContext, GainNode, DestinationNode, OscillatorNode, WebAudio)
+import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, WebAudio)
 import Audio.WebAudio.AudioContext (makeAudioContext, createOscillator,
       createGain, connect, connectParam, currentTime, destination, disconnect, disconnectParam)
-import Audio.WebAudio.Oscillator (frequency, startOscillator, stopOscillator)
-import Audio.WebAudio.AudioParam (getValue, setValue)
-import Audio.WebAudio.GainNode (gain)
+import Audio.WebAudio.Oscillator (frequency, setFrequency, startOscillator, stopOscillator)
+import Audio.WebAudio.GainNode (setGain)
 import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
 import Network.HTTP.Affjax (AJAX)
@@ -68,18 +67,15 @@ configure :: ∀ eff.
 configure ctx = do
   -- the modulating oscillator
   modulator <- createOscillator ctx
-  mfreqParam <- frequency modulator
-  _ <- setValue 8.0 mfreqParam
+  _ <- setFrequency 0.8 modulator
   -- modulationFrequency <- getValue mfreqParam
   -- the carrier oscillator (the basic note)
   carrier <- createOscillator ctx
-  cfreqParam <- frequency carrier
-  _ <- setValue 300.0 cfreqParam
-  -- cfreqParam' <- frequency carrier
   -- the gain node
+  _ <- setFrequency 300.0 carrier
+  cfreqParam <- frequency carrier
   modGainNode <- createGain ctx
-  gainParam <- gain modGainNode
-  _ <- setValue 30.0 gainParam
+  _ <- setGain 30.0 modGainNode
   dst <- destination ctx
   -- connect it all up
   _ <- connect modulator modGainNode

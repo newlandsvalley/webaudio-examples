@@ -7,7 +7,7 @@ import Audio.WebAudio.AudioContext (makeAudioContext, createBufferSource, create
       createGain, connect, currentTime, destination, disconnect)
 import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource, stopBufferSource, setLoop)
 import Audio.WebAudio.AudioParam (setValue)
-import Audio.WebAudio.GainNode (gain)
+import Audio.WebAudio.GainNode (setGain)
 import Audio.WebAudio.DelayNode (delayTime)
 import Audio.Util
 import Control.Monad.Aff (Aff, delay)
@@ -58,9 +58,8 @@ configure ctx buf = do
   -- delay by half a second
   _ <- setValue 0.5 delayParam
   feedback <- createGain ctx
-  gainValue <- gain feedback
   -- create a diminishing echo effect each time we feed back
-  _ <- setValue 0.8 gainValue
+  _ <- setGain 0.8 feedback
   dst <- destination ctx
 
   -- connect the feedback loop

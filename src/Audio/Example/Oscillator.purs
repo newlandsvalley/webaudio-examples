@@ -3,9 +3,8 @@ module Audio.Example.Oscillator (example) where
 import Prelude (Unit, bind, pure, negate, unit, ($), (*), (+), (-), (>), (<), (/))
 import Audio.WebAudio.Types (AudioContext, OscillatorNode, GainNode, WebAudio)
 import Audio.WebAudio.AudioContext (makeAudioContext, createOscillator, createGain, connect, currentTime, destination)
-import Audio.WebAudio.Oscillator (OscillatorType(..), frequency, detune, setOscillatorType, startOscillator, stopOscillator)
-import Audio.WebAudio.AudioParam (setValue)
-import Audio.WebAudio.GainNode (gain)
+import Audio.WebAudio.Oscillator (OscillatorType(..), setFrequency, setDetune, setOscillatorType, startOscillator, stopOscillator)
+import Audio.WebAudio.GainNode (setGain)
 import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
 import Network.HTTP.Affjax (AJAX)
@@ -58,10 +57,9 @@ configure :: ∀ eff.
 configure ctx oscillatorType = do
   osc <- createOscillator ctx
   _ <- setOscillatorType oscillatorType osc
-  gainNode <- createGain ctx
   -- let's not make it too loud - oscillators can be annoying
-  gainValue <- gain gainNode
-  _ <- setValue 0.1 gainValue
+  gainNode <- createGain ctx
+  _ <- setGain 0.1 gainNode
   dst <- destination ctx
   _ <- connect osc gainNode
   _ <- connect gainNode dst
@@ -78,9 +76,7 @@ changeFrequency :: ∀ eff.
       )
       Unit
 changeFrequency ctx controller hz = do
-  freqValue <- frequency controller.oscillator
-  _ <- setValue hz freqValue
-  pure unit
+  setFrequency hz controller.oscillator
 
 -- | change the detune
 changeDetune :: ∀ eff.
@@ -93,9 +89,7 @@ changeDetune :: ∀ eff.
       )
       Unit
 changeDetune ctx controller cents = do
-  detuneValue <- detune controller.oscillator
-  _ <- setValue cents detuneValue
-  pure unit
+  setDetune cents controller.oscillator
 
 -- | start the oscillator
 start :: ∀ eff.

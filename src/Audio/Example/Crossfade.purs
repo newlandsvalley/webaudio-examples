@@ -1,13 +1,12 @@
 module Audio.Example.Crossfade (example) where
 
-import Prelude (Unit, bind, pure, unit, ($), (+), (-), (*), (>))
+import Prelude (Unit, bind, pure, ($), (+), (-), (*), (>))
 import Data.Array.Partial (head, last)
 import Partial.Unsafe (unsafePartial)
 import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode, WebAudio)
 import Audio.WebAudio.AudioContext (makeAudioContext, createBufferSource, createGain, connect, currentTime, destination)
 import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource, stopBufferSource, setLoop)
-import Audio.WebAudio.AudioParam (setValue)
-import Audio.WebAudio.GainNode (gain)
+import Audio.WebAudio.GainNode (setGain)
 import Audio.Util
 import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
@@ -82,11 +81,8 @@ changeVolume :: ∀ eff.
       )
       Unit
 changeVolume ctx controller fraction = do
-  -- Let's use an x*x curve (x-squared) since simple linear (x) does not
-  -- sound as good.
-  gainValue <- gain controller.gain
-  _ <- setValue (fraction * fraction) gainValue
-  pure unit
+  setGain (fraction * fraction) controller.gain
+
 
 -- | start the playback
 start :: ∀ eff.
