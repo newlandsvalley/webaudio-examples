@@ -12,6 +12,7 @@ import Audio.Example.Filter as Filter
 import Audio.Example.Oscillator as Oscillator
 import Audio.Example.Feedback as Feedback
 import Audio.Example.FrequencyModulation as FrequencyModulation
+import Audio.Example.Cowbell as Cowbell
 
 
 main :: ∀ eff.
@@ -34,4 +35,5 @@ main =
   -- launchAff Filter.example
   -- launchAff Oscillator.example
   -- launchAff Feedback.example
-  launchAff FrequencyModulation.example
+  -- launchAff FrequencyModulation.example
+  launchAff Cowbell.example
