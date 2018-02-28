@@ -39,7 +39,7 @@ setup ctx = do
   filterController <- liftEff $ configure ctx buffer
   pure filterController
 
--- | configurew the nodes
+-- | configure the nodes
 configure :: ∀ eff.
      AudioContext
   -> AudioBuffer
@@ -100,7 +100,7 @@ start ctx filterController = do
   now <- currentTime ctx
   startBufferSource now filterController.source
 
--- | staopthe playback
+-- | stop the playback
 stop :: ∀ eff.
      AudioContext
   -> FilterController
@@ -116,8 +116,8 @@ stop ctx filterController = do
 
 
 -- | This assumes we start with a setting of 0.0 (no filter) and gradually
--- | increade it until it reaches 1.0 (most frequencies filtered) after which we stop
--- | the filtered freuencies start at he low end of the spectrum and move up
+-- | increase it until it reaches 1.0 (most frequencies filtered) after which we stop
+-- | the filtered frequencies start at the low end of the spectrum and move up
 moveFilterFreq :: ∀ eff.
      AudioContext
   -> FilterController

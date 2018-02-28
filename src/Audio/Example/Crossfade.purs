@@ -113,7 +113,7 @@ stop ctx controllerPair = do
   stopBufferSource now controllerPair.right.source
 
 -- | This assumes we start with a fraction of 0.0 (drums only) and gradually
--- | increade it until it reaches 1.0 (organ only) after which we stop
+-- | increase it until it reaches 1.0 (organ only) after which we stop
 crossfade :: ∀ eff.
      AudioContext
   -> ControllerPair

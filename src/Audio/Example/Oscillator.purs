@@ -37,7 +37,7 @@ endFrequency :: Number
 endFrequency = (2.0 * startFrequency) + 60.0
 
 -- | and to go back down again, we'll use detune
--- | which is only defined in the range -1200 to + 1200
+-- | which is only defined in the range -1200 to +1200
 -- | where 1 semitone is 100 units (cents)
 startDetune :: Number
 startDetune = 1200.0
@@ -45,7 +45,7 @@ startDetune = 1200.0
 endDetune :: Number
 endDetune =  -110.0
 
--- | configurew the nodes
+-- | configure the nodes
 configure :: ∀ eff.
      AudioContext
   -> OscillatorType

@@ -40,7 +40,7 @@ setup ctx = do
   buffer <- loadSoundBuffer ctx "ogg/chop.ogg"
   liftEff $ configure ctx buffer
 
--- | configurew the nodes
+-- | configure the nodes
 configure :: ∀ eff.
      AudioContext
   -> AudioBuffer
