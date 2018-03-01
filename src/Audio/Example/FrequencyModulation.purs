@@ -38,9 +38,9 @@ configure ctx = do
   _ <- setFrequency 0.8 modulator
   -- the carrier oscillator (the basic note)
   carrier <- createOscillator ctx
-  -- the gain node
   _ <- setFrequency 300.0 carrier
   cfreqParam <- frequency carrier
+  -- the gain node
   modGainNode <- createGain ctx
   _ <- setGain 30.0 modGainNode
   dst <- destination ctx

@@ -38,7 +38,7 @@ setup ctx = do
   buffer <- loadSoundBuffer ctx "wav/techno.wav"
   liftEff $ configure ctx buffer
 
--- | configurew the nodes
+-- | configure the nodes
 configure :: ∀ eff.
      AudioContext
   -> AudioBuffer
