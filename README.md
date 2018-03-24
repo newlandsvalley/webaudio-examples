@@ -5,6 +5,8 @@ This project illustrates a few basic examples of webaudio usage in PureScript.  
 
 Other examples are based on blog posts by [Chris Lowis](http://blog.chrislowis.co.uk/) and [Output Channel](http://outputchannel.com/).
 
+Most of the examples can now also be expressed declaratively (and hence more simply) using [purescript-audiograph](https://github.com/newlandsvalley/purescript-audiograph).
+
 The aim of the project is firstly to teach myself more web-audio and secondly to try to assess the expressivity of the purescript-webaudio API. The intention is to factor any missing features back in to my fork of the API.
 
 Completed so far
