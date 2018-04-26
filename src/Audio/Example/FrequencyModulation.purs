@@ -1,12 +1,11 @@
 module Audio.Example.FrequencyModulation (example) where
 
 import Prelude (Unit, bind, pure, ($))
-import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, WebAudio)
-import Audio.WebAudio.AudioContext (makeAudioContext, createOscillator,
-      createGain, connect, currentTime, destination)
+import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, AUDIO, connect, connectParam)
+import Audio.WebAudio.BaseAudioContext (newAudioContext, createOscillator,
+      createGain, currentTime, destination)
 import Audio.WebAudio.Oscillator (frequency, setFrequency, startOscillator, stopOscillator)
 import Audio.WebAudio.GainNode (setGain)
-import Audio.WebAudio.Utils (unsafeConnectParam)
 import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
 import Network.HTTP.Affjax (AJAX)
@@ -28,7 +27,7 @@ type FMController =
 configure :: ∀ eff.
      AudioContext
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       FMController
@@ -46,7 +45,7 @@ configure ctx = do
   dst <- destination ctx
   -- connect it all up
   _ <- connect modulator modGainNode
-  _ <- unsafeConnectParam modGainNode carrier "frequency"
+  _ <- connectParam modGainNode carrier "frequency"
   _ <- connect carrier dst
   pure { modulator : modulator, carrier : carrier, modGain : modGainNode}
 
@@ -55,7 +54,7 @@ start :: ∀ eff.
      AudioContext
   -> FMController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -69,7 +68,7 @@ stop :: ∀ eff.
      AudioContext
   -> FMController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -82,12 +81,12 @@ stop ctx controller = do
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   controller <- liftEff $ configure ctx
   _ <- liftEff $ start ctx controller
   -- let it run for about 5 seconds

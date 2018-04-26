@@ -2,9 +2,9 @@ module Audio.Example.Feedback (example) where
 
 import Prelude (Unit, bind, pure, ($))
 import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode,
-     DelayNode, DestinationNode, WebAudio)
-import Audio.WebAudio.AudioContext (makeAudioContext, createBufferSource, createDelay,
-      createGain, connect, currentTime, destination, disconnect)
+     DelayNode, DestinationNode, AUDIO, connect, disconnect)
+import Audio.WebAudio.BaseAudioContext (newAudioContext, createBufferSource, createDelay,
+      createGain, currentTime, destination)
 import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource, stopBufferSource, setLoop)
 import Audio.WebAudio.AudioParam (setValue)
 import Audio.WebAudio.GainNode (setGain)
@@ -32,7 +32,7 @@ setup :: ∀ eff.
   AudioContext
   -> Aff
       ( ajax :: AJAX
-      , wau :: WebAudio
+      , audio :: AUDIO
       | eff
       )
       FeedbackController
@@ -45,7 +45,7 @@ configure :: ∀ eff.
      AudioContext
   -> AudioBuffer
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       FeedbackController
@@ -76,7 +76,7 @@ start :: ∀ eff.
      AudioContext
   -> FeedbackController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -89,7 +89,7 @@ stop :: ∀ eff.
      AudioContext
   -> FeedbackController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -106,12 +106,12 @@ stop ctx controller = do
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   controller <- setup ctx
   _ <- liftEff $ start ctx controller
   -- let it run for 10 seconds

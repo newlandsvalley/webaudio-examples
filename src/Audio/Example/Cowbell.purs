@@ -1,9 +1,9 @@
 module Audio.Example.Cowbell (example) where
 
 import Prelude (Unit, bind, pure, ($), (+))
-import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, WebAudio)
-import Audio.WebAudio.AudioContext (makeAudioContext, createOscillator,
-      createGain, createBiquadFilter, connect, currentTime, destination)
+import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, AUDIO, connect)
+import Audio.WebAudio.BaseAudioContext (newAudioContext, createOscillator,
+      createGain, createBiquadFilter, currentTime, destination)
 import Audio.WebAudio.Oscillator (OscillatorType(..), setFrequency, setOscillatorType, startOscillator, stopOscillator)
 import Audio.WebAudio.GainNode (gain)
 import Audio.WebAudio.BiquadFilterNode (BiquadFilterType(..), filterFrequency, setFilterType)
@@ -28,7 +28,7 @@ type CowbellController =
 configure :: ∀ eff.
      AudioContext
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       CowbellController
@@ -76,7 +76,7 @@ start :: ∀ eff.
      Number
   -> CowbellController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -89,7 +89,7 @@ stop :: ∀ eff.
      Number
   -> CowbellController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -101,12 +101,12 @@ stop time controller = do
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   now <- liftEff $ currentTime ctx
   controller <- liftEff $ configure ctx
   _ <- liftEff $ start now controller

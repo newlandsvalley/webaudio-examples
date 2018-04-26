@@ -1,8 +1,8 @@
 module Audio.Example.Oscillator (example) where
 
 import Prelude (Unit, bind, pure, negate, unit, ($), (*), (+), (-), (>), (<), (/))
-import Audio.WebAudio.Types (AudioContext, OscillatorNode, GainNode, WebAudio)
-import Audio.WebAudio.AudioContext (makeAudioContext, createOscillator, createGain, connect, currentTime, destination)
+import Audio.WebAudio.Types (AudioContext, OscillatorNode, GainNode, AUDIO, connect)
+import Audio.WebAudio.BaseAudioContext (newAudioContext, createOscillator, createGain, currentTime, destination)
 import Audio.WebAudio.Oscillator (OscillatorType(..), setFrequency, setDetune, setOscillatorType, startOscillator, stopOscillator)
 import Audio.WebAudio.GainNode (setGain)
 import Control.Monad.Aff (Aff, delay)
@@ -50,7 +50,7 @@ configure :: ∀ eff.
      AudioContext
   -> OscillatorType
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       OscillatorController
@@ -71,7 +71,7 @@ changeFrequency :: ∀ eff.
   -> OscillatorController
   -> Number
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       Unit
@@ -84,7 +84,7 @@ changeDetune :: ∀ eff.
   -> OscillatorController
   -> Number
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       Unit
@@ -96,7 +96,7 @@ start :: ∀ eff.
      AudioContext
   -> OscillatorController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -109,7 +109,7 @@ stop :: ∀ eff.
      AudioContext
   -> OscillatorController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -124,7 +124,7 @@ stepFreq :: ∀ eff.
   -> Number
   -> Aff
      ( ajax :: AJAX
-     , wau :: WebAudio
+     , audio :: AUDIO
      | eff
      )
      Unit
@@ -147,7 +147,7 @@ stepDetune :: ∀ eff.
   -> Number
   -> Aff
      ( ajax :: AJAX
-     , wau :: WebAudio
+     , audio :: AUDIO
      | eff
      )
      Unit
@@ -165,12 +165,12 @@ stepDetune ctx controller cents =
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   controller <- liftEff $ configure ctx Square
   _ <- liftEff $ start ctx controller
   _ <- stepFreq ctx controller startFrequency

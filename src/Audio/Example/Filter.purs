@@ -1,9 +1,9 @@
 module Audio.Example.Filter (example) where
 
 import Prelude (Unit, bind, pure, unit, ($), (-), (+), (*), (/), (>))
-import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, BiquadFilterNode, WebAudio)
-import Audio.WebAudio.AudioContext (makeAudioContext, createBufferSource, createBiquadFilter,
-  connect, currentTime, destination, sampleRate)
+import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, BiquadFilterNode, AUDIO, connect)
+import Audio.WebAudio.BaseAudioContext (newAudioContext, createBufferSource, createBiquadFilter,
+  currentTime, destination, sampleRate)
 import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource, stopBufferSource, setLoop)
 import Audio.WebAudio.AudioParam (setValue)
 import Audio.WebAudio.BiquadFilterNode (BiquadFilterType(..), filterFrequency, setFilterType)
@@ -30,7 +30,7 @@ setup :: ∀ eff.
   AudioContext
   -> Aff
       ( ajax :: AJAX
-      , wau :: WebAudio
+      , audio :: AUDIO
       | eff
       )
       FilterController
@@ -44,7 +44,7 @@ configure :: ∀ eff.
      AudioContext
   -> AudioBuffer
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       FilterController
@@ -67,7 +67,7 @@ changeFrequency :: ∀ eff.
   -> FilterController
   -> Number
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       Unit
@@ -92,7 +92,7 @@ start :: ∀ eff.
      AudioContext
   -> FilterController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       Unit
@@ -105,7 +105,7 @@ stop :: ∀ eff.
      AudioContext
   -> FilterController
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       Unit
@@ -124,7 +124,7 @@ moveFilterFreq :: ∀ eff.
   -> Number
   -> Aff
      ( ajax :: AJAX
-     , wau :: WebAudio
+     , audio :: AUDIO
      | eff
      )
      Unit
@@ -141,12 +141,12 @@ moveFilterFreq ctx filterController fraction =
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   filterController <- setup ctx
   -- start it off
   _ <- liftEff $ start ctx filterController

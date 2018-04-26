@@ -12,8 +12,8 @@ import Control.Monad.Eff (Eff)
 import Data.Traversable (traverse)
 import Control.Parallel (parallel, sequential)
 import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource)
-import Audio.WebAudio.AudioContext (connect, createBufferSource, currentTime, decodeAudioDataAsync, destination, makeAudioContext)
-import Audio.WebAudio.Types (AudioContext, AudioBuffer, WebAudio)
+import Audio.WebAudio.BaseAudioContext (createBufferSource, currentTime, decodeAudioDataAsync, destination, newAudioContext)
+import Audio.WebAudio.Types (AudioContext, AudioBuffer, AUDIO, connect)
 
 
 type ElapsedTime = Number
@@ -24,7 +24,7 @@ loadSoundBuffer :: ∀ eff.
   -> String
   -> Aff
      ( ajax :: AJAX
-     , wau :: WebAudio
+     , audio :: AUDIO
      | eff
      )
      AudioBuffer
@@ -39,7 +39,7 @@ loadSoundBuffers :: ∀ e.
   -> (Array String)
   -> Aff
      ( ajax :: AJAX
-     , wau :: WebAudio
+     , audio :: AUDIO
      | e
      )
      (Array AudioBuffer)
@@ -52,7 +52,7 @@ playSoundAt  :: ∀ eff.
   -> Maybe AudioBuffer
   -> ElapsedTime
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff )
       Unit
 playSoundAt ctx mbuffer elapsedTime =
@@ -73,12 +73,12 @@ playSoundAt ctx mbuffer elapsedTime =
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   buffers <- loadSoundBuffers ctx ["wav/hihat.wav", "wav/kick.wav", "wav/snare.wav"]
   _ <- liftEff $ playSoundAt ctx (buffers !! 0) 0.0
   _ <- liftEff $ playSoundAt ctx (buffers !! 1) 0.5

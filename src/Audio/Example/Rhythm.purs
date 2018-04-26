@@ -4,8 +4,8 @@ import Prelude (Unit, bind, pure, unit, ($), (+), (-), (*), (/), (>))
 import Data.Array ((!!))
 import Data.Maybe (Maybe)
 import Data.Int (toNumber)
-import Audio.WebAudio.Types (AudioContext, AudioBuffer, WebAudio)
-import Audio.WebAudio.AudioContext (makeAudioContext)
+import Audio.WebAudio.Types (AudioContext, AudioBuffer, AUDIO)
+import Audio.WebAudio.BaseAudioContext (newAudioContext)
 import Audio.Util
 import Control.Monad.Aff (Aff)
 import Network.HTTP.Affjax (AJAX)
@@ -21,7 +21,7 @@ aBar :: ∀ eff.
   -> Array AudioBuffer
   -> Int
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff )
       Unit
 aBar ctx buffers bar =
@@ -56,7 +56,7 @@ playLoopPattern :: ∀ eff.
   -> Number
   -> Int
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff )
       Unit
 playLoopPattern ctx buffer time eighthNoteTime count =
@@ -71,12 +71,12 @@ playLoopPattern ctx buffer time eighthNoteTime count =
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   buffers <- loadSoundBuffers ctx ["wav/hihat.wav", "wav/kick.wav", "wav/snare.wav"]
   _ <- liftEff $ aBar ctx buffers 0
   _ <- liftEff $ aBar ctx buffers 1

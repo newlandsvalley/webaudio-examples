@@ -3,7 +3,7 @@ module Main where
 import Prelude
 import Control.Monad.Eff (Eff)
 import Control.Monad.Aff (Fiber, launchAff)
-import Audio.WebAudio.Types (WebAudio)
+import Audio.WebAudio.Types (AUDIO)
 import Network.HTTP.Affjax (AJAX)
 import Audio.Example.Rhythm as Rhythm
 import Audio.Example.Volume as Volume
@@ -18,12 +18,12 @@ import Audio.Example.Cowbell as Cowbell
 main :: ∀ eff.
   Eff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     (Fiber
        ( ajax :: AJAX
-       , wau :: WebAudio
+       , audio :: AUDIO
        | eff
        )
        Unit

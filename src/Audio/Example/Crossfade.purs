@@ -3,8 +3,8 @@ module Audio.Example.Crossfade (example) where
 import Prelude (Unit, bind, pure, ($), (+), (-), (*), (>))
 import Data.Array.Partial (head, last)
 import Partial.Unsafe (unsafePartial)
-import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode, WebAudio)
-import Audio.WebAudio.AudioContext (makeAudioContext, createBufferSource, createGain, connect, currentTime, destination)
+import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode, AUDIO, connect)
+import Audio.WebAudio.BaseAudioContext (newAudioContext, createBufferSource, createGain, currentTime, destination)
 import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource, stopBufferSource, setLoop)
 import Audio.WebAudio.GainNode (setGain)
 import Audio.Util
@@ -36,7 +36,7 @@ setup :: ∀ eff.
   AudioContext
   -> Aff
       ( ajax :: AJAX
-      , wau :: WebAudio
+      , audio :: AUDIO
       | eff
       )
       ControllerPair
@@ -54,7 +54,7 @@ configureSource :: ∀ eff.
      AudioContext
   -> AudioBuffer
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         { source :: AudioBufferSourceNode
@@ -76,7 +76,7 @@ changeVolume :: ∀ eff.
   -> VolumeController
   -> Number
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       Unit
@@ -89,7 +89,7 @@ start :: ∀ eff.
      AudioContext
   -> ControllerPair
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
       Unit
@@ -103,7 +103,7 @@ stop :: ∀ eff.
      AudioContext
   -> ControllerPair
   -> Eff
-      ( wau :: WebAudio
+      ( audio :: AUDIO
       | eff
       )
         Unit
@@ -120,7 +120,7 @@ crossfade :: ∀ eff.
   -> Number
   -> Aff
      ( ajax :: AJAX
-     , wau :: WebAudio
+     , audio :: AUDIO
      | eff
      )
      Unit
@@ -142,12 +142,12 @@ crossfade ctx controllerPair fraction =
 example :: ∀ eff.
   Aff
     ( ajax :: AJAX
-    , wau :: WebAudio
+    , audio :: AUDIO
     | eff
     )
     Unit
 example = do
-  ctx <- liftEff makeAudioContext
+  ctx <- liftEff newAudioContext
   controllerPair <- setup ctx
   -- mute the second source
   _ <- liftEff $ changeVolume ctx controllerPair.right  0.0
