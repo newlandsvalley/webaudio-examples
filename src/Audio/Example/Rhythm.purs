@@ -4,26 +4,22 @@ import Prelude (Unit, bind, pure, unit, ($), (+), (-), (*), (/), (>))
 import Data.Array ((!!))
 import Data.Maybe (Maybe)
 import Data.Int (toNumber)
-import Audio.WebAudio.Types (AudioContext, AudioBuffer, AUDIO)
+import Audio.WebAudio.Types (AudioContext, AudioBuffer)
 import Audio.WebAudio.BaseAudioContext (newAudioContext)
 import Audio.Util
-import Control.Monad.Aff (Aff)
-import Network.HTTP.Affjax (AJAX)
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Class (liftEff)
+import Effect.Aff (Aff)
+import Effect (Effect)
+import Effect.Class (liftEffect)
 
 -- | Rhythm example
 -- | for the original webaudioapi javascript see
 -- | https://github.com/borismus/webaudioapi.com/blob/master/content/posts/rhythm/rhythm-sample.js
 
-aBar :: ∀ eff.
+aBar ::
      AudioContext
   -> Array AudioBuffer
   -> Int
-  -> Eff
-      ( audio :: AUDIO
-      | eff )
-      Unit
+  -> Effect Unit
 aBar ctx buffers bar =
   let
     tempo = 80 -- BPM (beats per minute)
@@ -49,16 +45,13 @@ aBar ctx buffers bar =
 
 -- | Play the hi-hat every eighth
 -- | we use recursion to emulate the for loop
-playLoopPattern :: ∀ eff.
+playLoopPattern ::
      AudioContext
   -> Maybe AudioBuffer
   -> Number
   -> Number
   -> Int
-  -> Eff
-      ( audio :: AUDIO
-      | eff )
-      Unit
+  -> Effect Unit
 playLoopPattern ctx buffer time eighthNoteTime count =
   if (count > 0) then
     do
@@ -68,16 +61,10 @@ playLoopPattern ctx buffer time eighthNoteTime count =
     do
       pure unit
 
-example :: ∀ eff.
-  Aff
-    ( ajax :: AJAX
-    , audio :: AUDIO
-    | eff
-    )
-    Unit
+example :: Aff Unit
 example = do
-  ctx <- liftEff newAudioContext
+  ctx <- liftEffect newAudioContext
   buffers <- loadSoundBuffers ctx ["wav/hihat.wav", "wav/kick.wav", "wav/snare.wav"]
-  _ <- liftEff $ aBar ctx buffers 0
-  _ <- liftEff $ aBar ctx buffers 1
+  _ <- liftEffect $ aBar ctx buffers 0
+  _ <- liftEffect $ aBar ctx buffers 1
   pure unit

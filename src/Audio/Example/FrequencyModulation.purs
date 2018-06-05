@@ -1,16 +1,16 @@
 module Audio.Example.FrequencyModulation (example) where
 
 import Prelude (Unit, bind, pure, ($))
-import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, AUDIO, connect, connectParam)
+import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, connect, connectParam)
 import Audio.WebAudio.BaseAudioContext (newAudioContext, createOscillator,
       createGain, currentTime, destination)
 import Audio.WebAudio.Oscillator (frequency, setFrequency, startOscillator, stopOscillator)
 import Audio.WebAudio.GainNode (setGain)
-import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
-import Network.HTTP.Affjax (AJAX)
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Class (liftEff)
+import Effect.Aff (Aff, delay)
+import Effect (Effect)
+import Effect.Class (liftEffect)
+
 
 -- | Frequency modulation example
 -- | examples exist on https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
@@ -24,13 +24,9 @@ type FMController =
   }
 
 -- | configure the nodes
-configure :: ∀ eff.
+configure ::
      AudioContext
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-      FMController
+  -> Effect FMController
 configure ctx = do
   -- the modulating oscillator
   modulator <- createOscillator ctx
@@ -50,45 +46,31 @@ configure ctx = do
   pure { modulator : modulator, carrier : carrier, modGain : modGainNode}
 
 -- | start the oscillator
-start :: ∀ eff.
+start ::
      AudioContext
   -> FMController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect Unit
 start ctx controller = do
   now <- currentTime ctx
   _ <- startOscillator now controller.carrier
   startOscillator now controller.modulator
 
 -- | stop the oscillator immediately
-stop :: ∀ eff.
+stop ::
      AudioContext
   -> FMController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect Unit
 stop ctx controller = do
   now <- currentTime ctx
   _ <- stopOscillator now controller.carrier
   stopOscillator now controller.modulator
 
 -- | the complete example
-example :: ∀ eff.
-  Aff
-    ( ajax :: AJAX
-    , audio :: AUDIO
-    | eff
-    )
-    Unit
+example ::  Aff Unit
 example = do
-  ctx <- liftEff newAudioContext
-  controller <- liftEff $ configure ctx
-  _ <- liftEff $ start ctx controller
+  ctx <- liftEffect newAudioContext
+  controller <- liftEffect $ configure ctx
+  _ <- liftEffect $ start ctx controller
   -- let it run for about 5 seconds
   _ <- delay (Milliseconds 5000.0)
-  liftEff $ stop ctx controller
+  liftEffect $ stop ctx controller

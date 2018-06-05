@@ -1,20 +1,21 @@
 module Audio.Example.Feedback (example) where
 
-import Prelude (Unit, bind, pure, ($))
+import Prelude (Unit, bind, pure, ($), (+))
+import Data.Maybe (Maybe(..))
 import Audio.WebAudio.Types (AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode,
-     DelayNode, DestinationNode, AUDIO, connect, disconnect)
+     DelayNode, DestinationNode, connect, disconnect)
 import Audio.WebAudio.BaseAudioContext (newAudioContext, createBufferSource, createDelay,
       createGain, currentTime, destination)
-import Audio.WebAudio.AudioBufferSourceNode (setBuffer, startBufferSource, stopBufferSource, setLoop)
+import Audio.WebAudio.AudioBufferSourceNode (StartOptions, setBuffer, startBufferSource, stopBufferSource, setLoop)
 import Audio.WebAudio.AudioParam (setValue)
 import Audio.WebAudio.GainNode (setGain)
 import Audio.WebAudio.DelayNode (delayTime)
 import Audio.Util
-import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
-import Network.HTTP.Affjax (AJAX)
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Class (liftEff)
+import Effect.Aff (Aff, delay)
+import Effect (Effect)
+import Effect.Class (liftEffect)
+
 
 
 -- | feedback example illustrating DelayNode inspired by
@@ -28,27 +29,18 @@ type FeedbackController =
   }
 
 -- | load the buffer and complete the configuration
-setup :: ∀ eff.
+setup ::
   AudioContext
-  -> Aff
-      ( ajax :: AJAX
-      , audio :: AUDIO
-      | eff
-      )
-      FeedbackController
+  -> Aff  FeedbackController
 setup ctx = do
   buffer <- loadSoundBuffer ctx "ogg/chop.ogg"
-  liftEff $ configure ctx buffer
+  liftEffect $ configure ctx buffer
 
 -- | configure the nodes
-configure :: ∀ eff.
+configure ::
      AudioContext
   -> AudioBuffer
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-      FeedbackController
+  -> Effect  FeedbackController
 configure ctx buf = do
   src <- createBufferSource ctx
   _ <- setBuffer buf src
@@ -72,27 +64,22 @@ configure ctx buf = do
   pure { source : src, delay : delay, gain : feedback, destination : dst}
 
 -- | start the sound
-start :: ∀ eff.
+start ::
      AudioContext
   -> FeedbackController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect Unit
 start ctx controller = do
   startTime <- currentTime ctx
-  startBufferSource (startTime) controller.source
+  let
+    whenOption :: StartOptions
+    whenOption = { when: Just (startTime + 0.1),  offset: Nothing, duration: Nothing }
+  startBufferSource whenOption controller.source
 
 -- | stop the sound
-stop :: ∀ eff.
+stop ::
      AudioContext
   -> FeedbackController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect Unit
 stop ctx controller = do
   now <- currentTime ctx
   -- these disconnects seem to be necessary to enable stopping
@@ -103,18 +90,12 @@ stop ctx controller = do
   stopBufferSource now controller.source
 
 -- | the complete example
-example :: ∀ eff.
-  Aff
-    ( ajax :: AJAX
-    , audio :: AUDIO
-    | eff
-    )
-    Unit
+example ::  Aff Unit
 example = do
-  ctx <- liftEff newAudioContext
+  ctx <- liftEffect newAudioContext
   controller <- setup ctx
-  _ <- liftEff $ start ctx controller
+  _ <- liftEffect $ start ctx controller
   -- let it run for 10 seconds
   _ <- delay (Milliseconds 10000.0)
   -- why doesn't this stop ??
-  liftEff $ stop ctx controller
+  liftEffect $ stop ctx controller

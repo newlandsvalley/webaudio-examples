@@ -1,10 +1,8 @@
 module Main where
 
 import Prelude
-import Control.Monad.Eff (Eff)
-import Control.Monad.Aff (Fiber, launchAff)
-import Audio.WebAudio.Types (AUDIO)
-import Network.HTTP.Affjax (AJAX)
+import Effect (Effect)
+import Effect.Aff (Fiber, launchAff)
 import Audio.Example.Rhythm as Rhythm
 import Audio.Example.Volume as Volume
 import Audio.Example.Crossfade as Crossfade
@@ -15,19 +13,7 @@ import Audio.Example.FrequencyModulation as FrequencyModulation
 import Audio.Example.Cowbell as Cowbell
 
 
-main :: ∀ eff.
-  Eff
-    ( ajax :: AJAX
-    , audio :: AUDIO
-    | eff
-    )
-    (Fiber
-       ( ajax :: AJAX
-       , audio :: AUDIO
-       | eff
-       )
-       Unit
-    )
+main ::  Effect (Fiber Unit)
 main =
   -- launchAff Rhythm.example
   -- launchAff Volume.example

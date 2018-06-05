@@ -1,17 +1,16 @@
 module Audio.Example.Cowbell (example) where
 
 import Prelude (Unit, bind, pure, ($), (+))
-import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, AUDIO, connect)
+import Audio.WebAudio.Types (AudioContext, GainNode, OscillatorNode, connect)
 import Audio.WebAudio.BaseAudioContext (newAudioContext, createOscillator,
       createGain, createBiquadFilter, currentTime, destination)
 import Audio.WebAudio.Oscillator (OscillatorType(..), setFrequency, setOscillatorType, startOscillator, stopOscillator)
 import Audio.WebAudio.GainNode (gain)
 import Audio.WebAudio.BiquadFilterNode (BiquadFilterType(..), filterFrequency, setFilterType)
 import Audio.WebAudio.AudioParam (setValue, setValueAtTime, exponentialRampToValueAtTime)
-import Control.Monad.Aff (Aff)
-import Network.HTTP.Affjax (AJAX)
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Class (liftEff)
+import Effect.Aff (Aff)
+import Effect (Effect)
+import Effect.Class (liftEffect)
 
 -- | Cowbell - illustrates rampToValue
 -- | example taken from
@@ -25,13 +24,9 @@ type CowbellController =
 
 -- | configure the nodes
 
-configure :: ∀ eff.
+configure ::
      AudioContext
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-      CowbellController
+  -> Effect CowbellController
 configure ctx = do
   now <- currentTime ctx
   -- we make the basic bell sound from a couple of frequencies
@@ -72,42 +67,28 @@ configure ctx = do
   pure { osc1 : osc1, osc2 : osc2, gain : gainNode}
 
 -- | start the oscillator
-start :: ∀ eff.
+start ::
      Number
   -> CowbellController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect Unit
 start time controller = do
   _ <- startOscillator time controller.osc1
   startOscillator time controller.osc2
 
 -- | stop the oscillator immediately
-stop :: ∀ eff.
+stop ::
      Number
   -> CowbellController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect  Unit
 stop time controller = do
   _ <- stopOscillator time controller.osc1
   stopOscillator time controller.osc2
 
 -- | the complete example
-example :: ∀ eff.
-  Aff
-    ( ajax :: AJAX
-    , audio :: AUDIO
-    | eff
-    )
-    Unit
+example :: Aff Unit
 example = do
-  ctx <- liftEff newAudioContext
-  now <- liftEff $ currentTime ctx
-  controller <- liftEff $ configure ctx
-  _ <- liftEff $ start now controller
-  liftEff $ stop (now + 1.1) controller
+  ctx <- liftEffect newAudioContext
+  now <- liftEffect $ currentTime ctx
+  controller <- liftEffect $ configure ctx
+  _ <- liftEffect $ start now controller
+  liftEffect $ stop (now + 1.1) controller

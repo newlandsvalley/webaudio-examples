@@ -1,15 +1,15 @@
 module Audio.Example.Oscillator (example) where
 
 import Prelude (Unit, bind, pure, negate, unit, ($), (*), (+), (-), (>), (<), (/))
-import Audio.WebAudio.Types (AudioContext, OscillatorNode, GainNode, AUDIO, connect)
+import Audio.WebAudio.Types (AudioContext, OscillatorNode, GainNode, connect)
 import Audio.WebAudio.BaseAudioContext (newAudioContext, createOscillator, createGain, currentTime, destination)
 import Audio.WebAudio.Oscillator (OscillatorType(..), setFrequency, setDetune, setOscillatorType, startOscillator, stopOscillator)
 import Audio.WebAudio.GainNode (setGain)
-import Control.Monad.Aff (Aff, delay)
 import Data.Time.Duration (Milliseconds(..))
-import Network.HTTP.Affjax (AJAX)
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Class (liftEff)
+import Effect.Aff (Aff, delay)
+import Effect (Effect)
+import Effect.Class (liftEffect)
+
 import Math (pow)
 
 -- | Volume example
@@ -46,14 +46,10 @@ endDetune :: Number
 endDetune =  -110.0
 
 -- | configure the nodes
-configure :: ∀ eff.
+configure ::
      AudioContext
   -> OscillatorType
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-      OscillatorController
+  -> Effect OscillatorController
 configure ctx oscillatorType = do
   osc <- createOscillator ctx
   _ <- setOscillatorType oscillatorType osc
@@ -66,116 +62,84 @@ configure ctx oscillatorType = do
   pure { oscillator : osc, gain : gainNode}
 
 -- | change the frequency
-changeFrequency :: ∀ eff.
+changeFrequency ::
      AudioContext
   -> OscillatorController
   -> Number
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-      Unit
+  -> Effect Unit
 changeFrequency ctx controller hz = do
   setFrequency hz controller.oscillator
 
 -- | change the detune
-changeDetune :: ∀ eff.
+changeDetune ::
      AudioContext
   -> OscillatorController
   -> Number
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-      Unit
+  -> Effect Unit
 changeDetune ctx controller cents = do
   setDetune cents controller.oscillator
 
 -- | start the oscillator
-start :: ∀ eff.
+start ::
      AudioContext
   -> OscillatorController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect Unit
 start ctx controller = do
   now <- currentTime ctx
   startOscillator now controller.oscillator
 
 -- | stop the oscillator immediately
-stop :: ∀ eff.
+stop ::
      AudioContext
   -> OscillatorController
-  -> Eff
-      ( audio :: AUDIO
-      | eff
-      )
-        Unit
+  -> Effect Unit
 stop ctx controller = do
   now <- currentTime ctx
   stopOscillator now controller.oscillator
 
 -- | gradually increase the frequency by a semitone every quarter second (or so)
-stepFreq :: ∀ eff.
+stepFreq ::
      AudioContext
   -> OscillatorController
   -> Number
-  -> Aff
-     ( ajax :: AJAX
-     , audio :: AUDIO
-     | eff
-     )
-     Unit
+  -> Aff Unit
 stepFreq ctx controller hz =
   if hz > endFrequency then do
-    _ <- liftEff $ stop ctx controller
+    _ <- liftEffect $ stop ctx controller
     pure unit
   else do
     let
       semitoneUp = hz * pow 2.0 (1.0 / 12.0)
     -- we'll mimic user input of pressing a 'semitone up' key with delays
     _ <- delay (Milliseconds 250.0)
-    _ <- liftEff $ changeFrequency ctx controller hz
+    _ <- liftEffect $ changeFrequency ctx controller hz
     stepFreq ctx controller semitoneUp
 
 -- | gradually increase the detune by 10% every quarter second or so
-stepDetune :: ∀ eff.
+stepDetune ::
      AudioContext
   -> OscillatorController
   -> Number
-  -> Aff
-     ( ajax :: AJAX
-     , audio :: AUDIO
-     | eff
-     )
-     Unit
+  -> Aff Unit
 stepDetune ctx controller cents =
   if cents < endDetune then do
-    _ <- liftEff $ stop ctx controller
+    _ <- liftEffect $ stop ctx controller
     pure unit
   else do
     -- we'll mimic user input of pressing a 'detune up' key with delays
     _ <- delay (Milliseconds 250.0)
-    _ <- liftEff $ changeDetune ctx controller cents
+    _ <- liftEffect $ changeDetune ctx controller cents
     stepDetune ctx controller (cents - 100.0)
 
 -- | the complete example
-example :: ∀ eff.
-  Aff
-    ( ajax :: AJAX
-    , audio :: AUDIO
-    | eff
-    )
-    Unit
+example :: Aff Unit
 example = do
-  ctx <- liftEff newAudioContext
-  controller <- liftEff $ configure ctx Square
-  _ <- liftEff $ start ctx controller
+  ctx <- liftEffect newAudioContext
+  controller <- liftEffect $ configure ctx Square
+  _ <- liftEffect $ start ctx controller
   _ <- stepFreq ctx controller startFrequency
   -- as we stopped the controller, we need to start a new one
   -- let's use a triangular wave ocillator
-  controller' <- liftEff $ configure ctx Triangle
-  _ <- liftEff $ start ctx controller'
+  controller' <- liftEffect $ configure ctx Triangle
+  _ <- liftEffect $ start ctx controller'
   stepDetune ctx controller' startDetune
